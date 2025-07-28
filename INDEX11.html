@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSMB Safety Monitoring Cycle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: min(800px, 90vw);
+            height: min(800px, 90vw);
+            position: relative;
+            border-radius: 50%;
+            border: 3px solid rgba(74, 144, 226, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .center-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: clamp(100px, 15vw, 140px);
+            height: clamp(100px, 15vw, 140px);
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: clamp(14px, 2vw, 18px);
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            z-index: 100;
+            animation: centerPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes centerPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        .element {
+            position: absolute;
+            width: clamp(80px, 12vw, 110px);
+            height: clamp(80px, 12vw, 110px);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: clamp(10px, 1.5vw, 12px);
+            text-align: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0) rotate(180deg) translateY(-100px);
+            transition: all 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px;
+        }
+
+        .element small {
+            text-align: center;
+            line-height: 1.1;
+            margin-top: 2px;
+            display: block;
+        }
+
+        .element.active {
+            opacity: 1;
+            transform: scale(1) rotate(0deg) translateY(0px);
+            animation: elementFloat 6s ease-in-out infinite;
+        }
+
+        .element:hover {
+            transform: scale(1.2) rotate(0deg) translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            animation: none;
+        }
+
+        .element.clicked {
+            animation: clickPulse 1.5s ease-out;
+        }
+
+        @keyframes elementFloat {
+            0%, 100% { transform: scale(1) rotate(0deg) translateY(0px); }
+            25% { transform: scale(1.02) rotate(1deg) translateY(-3px); }
+            50% { transform: scale(1.05) rotate(0deg) translateY(-6px); }
+            75% { transform: scale(1.02) rotate(-1deg) translateY(-3px); }
+        }
+
+        @keyframes clickPulse {
+            0% { transform: scale(1) rotate(0deg); }
+            30% { transform: scale(1.3) rotate(5deg); filter: brightness(1.5); }
+            60% { transform: scale(1.1) rotate(-2deg); filter: brightness(1.2); }
+            100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+        }
+
+        .element-emoji {
+            font-size: clamp(20px, 3vw, 28px);
+            margin-bottom: 2px;
+            animation: emojiSpin 8s linear infinite;
+        }
+
+        @keyframes emojiSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Positioned around the circle */
+        .element-1 {
+            background: linear-gradient(45deg, #ff9a56, #ffad56);
+            top: 8%;
+            left: 50%;
+            transform: translateX(-50%) scale(0) rotate(180deg) translateY(-100px);
+        }
+
+        .element-2 {
+            background: linear-gradient(45deg, #a8e6cf, #7fcdcd);
+            top: 25%;
+            right: 8%;
+        }
+
+        .element-3 {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            top: 50%;
+            right: 4%;
+            transform: translateY(-50%) scale(0) rotate(180deg) translateY(-100px);
+        }
+
+        .element-4 {
+            background: linear-gradient(45deg, #ffd93d, #ff6b6b);
+            bottom: 25%;
+            right: 8%;
+        }
+
+        .element-5 {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%) scale(0) rotate(180deg) translateY(-100px);
+        }
+
+        .element-6 {
+            background: linear-gradient(45deg, #fd79a8, #e84393);
+            bottom: 25%;
+            left: 8%;
+        }
+
+        .element-7 {
+            background: linear-gradient(45deg, #00b894, #00cec9);
+            top: 50%;
+            left: 4%;
+            transform: translateY(-50%) scale(0) rotate(180deg) translateY(-100px);
+        }
+
+        .element-8 {
+            background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+            top: 25%;
+            left: 8%;
+        }
+
+        .orbit-path {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 85%;
+            height: 85%;
+            border: 2px dashed rgba(102, 126, 234, 0.4);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .orbit-path.active {
+            opacity: 1;
+            animation: orbitRotate 20s linear infinite;
+        }
+
+        @keyframes orbitRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .moving-dot {
+            position: absolute;
+            width: clamp(8px, 1.5vw, 12px);
+            height: clamp(8px, 1.5vw, 12px);
+            background: #ff6b6b;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            box-shadow: 0 0 20px #ff6b6b;
+        }
+
+        .moving-dot.active {
+            opacity: 1;
+            animation: orbit 12s linear infinite;
+        }
+
+        @keyframes orbit {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg) translateX(min(300px, 35vw)) rotate(0deg);
+                box-shadow: 0 0 20px #ff6b6b;
+            }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg) translateX(min(300px, 35vw)) rotate(-360deg);
+                box-shadow: 0 0 30px #ff6b6b;
+            }
+        }
+
+        .title {
+            color: #2c3e50;
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 2s ease forwards;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: #5a6c7d;
+            font-size: clamp(14px, 2.5vw, 18px);
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 2s ease 1s forwards;
+            margin-bottom: 30px;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: min(300px, 90vw);
+            max-height: 40vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 20px;
+            color: #2c3e50;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .info-panel.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .info-panel h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: clamp(16px, 2vw, 18px);
+        }
+
+        .info-panel p {
+            line-height: 1.5;
+            font-size: clamp(12px, 1.5vw, 14px);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-40%);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: clamp(12px, 1.5vw, 14px);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0px);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .info-panel {
+                position: fixed;
+                bottom: 80px;
+                top: auto;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                transform: translateY(100%);
+            }
+
+            .info-panel.active {
+                transform: translateY(0);
+            }
+
+            .controls {
+                bottom: 10px;
+                gap: 10px;
+                transform: translateX(-50%);
+            }
+
+            .music-toggle {
+                top: 10px;
+                left: 10px;
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: rippleEffect 0.8s ease-out;
+        }
+
+        @keyframes rippleEffect {
+            0% {
+                width: 0px;
+                height: 0px;
+                opacity: 1;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        .floating-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: float 15s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .music-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .music-toggle:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .music-toggle.disabled {
+            background: rgba(255, 100, 100, 0.9);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="music-toggle" onclick="toggleMusic()">🎵</div>
+
+    <div class="title">DSMB Safety Monitoring Cycle</div>
+    <div class="subtitle">Interactive Clinical Trial Oversight Process<br><small style="color: rgba(44, 62, 80, 0.7); font-size: 14px;">🎵 Click music button for background audio • ✨ Click elements to explore</small></div>
+
+    <div class="container">
+        <div class="floating-particles"></div>
+        <div class="orbit-path"></div>
+        <div class="moving-dot"></div>
+        
+        <div class="center-logo">
+            DSMB<br>
+            <small>Data Safety<br>Monitoring</small>
+        </div>
+
+        <div class="element element-1" data-info="protocol">
+            <div class="element-emoji">📋</div>
+            <small>Protocol<br>Review</small>
+        </div>
+
+        <div class="element element-2" data-info="enrollment">
+            <div class="element-emoji">👥</div>
+            <small>Patient<br>Enrollment</small>
+        </div>
+
+        <div class="element element-3" data-info="adverse">
+            <div class="element-emoji">⚠️</div>
+            <small>Adverse<br>Events</small>
+        </div>
+
+        <div class="element element-4" data-info="monitoring">
+            <div class="element-emoji">📊</div>
+            <small>Safety<br>Monitoring</small>
+        </div>
+
+        <div class="element element-5" data-info="analysis">
+            <div class="element-emoji">🔍</div>
+            <small>Data<br>Analysis</small>
+        </div>
+
+        <div class="element element-6" data-info="decision">
+            <div class="element-emoji">⚖️</div>
+            <small>DSMB<br>Decision</small>
+        </div>
+
+        <div class="element element-7" data-info="regulatory">
+            <div class="element-emoji">📢</div>
+            <small>Regulatory<br>Reporting</small>
+        </div>
+
+        <div class="element element-8" data-info="action">
+            <div class="element-emoji">🎯</div>
+            <small>Action<br>Implementation</small>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <h3 id="info-title">DSMB Process</h3>
+        <p id="info-content">Click on any element to learn more about that phase of the DSMB safety monitoring cycle.</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="restartAnimation()">↻ Restart Animation</button>
+        <button class="btn" onclick="pauseAnimation()">⏸️ Pause</button>
+        <button class="btn" onclick="downloadHTML()">💾 Download HTML</button>
+    </div>
+
+    <script>
+        const elements = document.querySelectorAll('.element');
+        const orbitPath = document.querySelector('.orbit-path');
+        const movingDot = document.querySelector('.moving-dot');
+        const infoPanel = document.querySelector('.info-panel');
+        const infoTitle = document.getElementById('info-title');
+        const infoContent = document.getElementById('info-content');
+        const particlesContainer = document.querySelector('.floating-particles');
+
+        let animationStarted = false;
+        let isPaused = false;
+        let musicEnabled = false;
+        let musicPlaying = false;
+        let audioContext;
+        let musicInterval;
+
+        // Simple, reliable music system
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                return true;
+            } catch (e) {
+                console.log('Audio not supported');
+                return false;
+            }
+        }
+
+        function playBackgroundMusic() {
+            if (!musicEnabled || !audioContext || musicPlaying) return;
+            
+            musicPlaying = true;
+            
+            function createMusicLoop() {
+                if (!musicPlaying) return;
+                
+                // Simple, beautiful melody
+                const notes = [
+                    { freq: 523.25, duration: 800 }, // C5
+                    { freq: 659.25, duration: 600 }, // E5
+                    { freq: 783.99, duration: 800 }, // G5
+                    { freq: 659.25, duration: 600 }, // E5
+                    { freq: 698.46, duration: 1000 }, // F5
+                    { freq: 587.33, duration: 800 }, // D5
+                    { freq: 523.25, duration: 1200 }, // C5
+                ];
+                
+                let time = audioContext.currentTime + 0.1;
+                
+                notes.forEach((note, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(note.freq, time);
+                    oscillator.type = 'triangle';
+                    
+                    gainNode.gain.setValueAtTime(0, time);
+                    gainNode.gain.linearRampToValueAtTime(0.1, time + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, time + note.duration / 1000);
+                    
+                    oscillator.start(time);
+                    oscillator.stop(time + note.duration / 1000);
+                    
+                    time += note.duration / 1000;
+                });
+                
+                // Loop every 8 seconds
+                if (musicPlaying) {
+                    musicInterval = setTimeout(createMusicLoop, 8000);
+                }
+            }
+            
+            createMusicLoop();
+        }
+
+        function stopMusic() {
+            musicPlaying = false;
+            if (musicInterval) {
+                clearTimeout(musicInterval);
+                musicInterval = null;
+            }
+        }
+
+        function toggleMusic() {
+            const musicToggle = document.querySelector('.music-toggle');
+            
+            if (!audioContext) {
+                if (!initAudio()) {
+                    musicToggle.textContent = '🔇';
+                    musicToggle.classList.add('disabled');
+                    return;
+                }
+            }
+            
+            musicEnabled = !musicEnabled;
+            
+            if (musicEnabled) {
+                musicToggle.textContent = '🎵';
+                musicToggle.classList.remove('disabled');
+                playBackgroundMusic();
+            } else {
+                musicToggle.textContent = '🔇';
+                musicToggle.classList.add('disabled');
+                stopMusic();
+            }
+        }
+
+        const elementInfo = {
+            protocol: {
+                title: "Protocol Review",
+                content: "DSMB reviews and approves the study protocol, informed consent, and safety monitoring plan before first patient enrollment. This ensures participant safety from day one and establishes clear monitoring parameters."
+            },
+            enrollment: {
+                title: "Patient Enrollment",
+                content: "Monitoring begins as patients enter the study. DSMB tracks enrollment rates, demographics, baseline characteristics, and early safety signals across all participating sites."
+            },
+            adverse: {
+                title: "Adverse Events Collection",
+                content: "Systematic collection and classification of all adverse events (AEs) and serious adverse events (SAEs). Events are assessed for severity, causality, and expectedness using standardized criteria like CTCAE v5.0."
+            },
+            monitoring: {
+                title: "Safety Monitoring",
+                content: "Continuous review of adverse events, laboratory abnormalities, and safety parameters. Real-time assessment of participant welfare, study conduct, and protocol adherence across all sites."
+            },
+            analysis: {
+                title: "Data Analysis",
+                content: "Systematic analysis of cumulative safety and efficacy data at pre-defined intervals. Statistical evaluation of benefit-risk ratio, interim efficacy, and futility assessment."
+            },
+            decision: {
+                title: "DSMB Decision",
+                content: "Independent committee makes evidence-based recommendations: continue unchanged, modify protocol, suspend enrollment, or terminate study based on safety and efficacy data review."
+            },
+            regulatory: {
+                title: "Regulatory Reporting",
+                content: "Communication of DSMB findings to regulatory authorities (FDA, EMA), institutional review boards, study investigators, and sponsors. Ensures compliance with safety reporting requirements."
+            },
+            action: {
+                title: "Action Implementation",
+                content: "DSMB recommendations are implemented by sponsor and investigators. Protocol amendments, enhanced monitoring, or study modifications are executed. The cycle continues with ongoing oversight."
+            }
+        };
+
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function startAnimation() {
+            if (animationStarted && !isPaused) return;
+            animationStarted = true;
+            isPaused = false;
+
+            // Create floating particles
+            createParticles();
+
+            // Show info panel
+            setTimeout(() => {
+                infoPanel.classList.add('active');
+            }, 1000);
+
+            // Show orbit path
+            setTimeout(() => {
+                orbitPath.classList.add('active');
+            }, 1500);
+
+            // Show elements one by one with staggered timing
+            elements.forEach((element, index) => {
+                setTimeout(() => {
+                    if (isPaused) return;
+                    element.classList.add('active');
+                }, 2000 + (index * 400));
+            });
+
+            // Start moving dot
+            setTimeout(() => {
+                if (!isPaused) {
+                    movingDot.classList.add('active');
+                }
+            }, 2000 + (elements.length * 400) + 1000);
+        }
+
+        function restartAnimation() {
+            animationStarted = false;
+            isPaused = false;
+            
+            // Clear particles
+            particlesContainer.innerHTML = '';
+            
+            // Reset all elements
+            elements.forEach(element => {
+                element.classList.remove('active', 'clicked');
+            });
+            orbitPath.classList.remove('active');
+            movingDot.classList.remove('active');
+            infoPanel.classList.remove('active');
+
+            // Reset info panel
+            infoTitle.textContent = 'DSMB Process';
+            infoContent.textContent = 'Click on any element to learn more about that phase of the DSMB safety monitoring cycle.';
+
+            // Restart
+            setTimeout(startAnimation, 500);
+        }
+
+        function pauseAnimation() {
+            isPaused = !isPaused;
+            const pauseBtn = document.querySelector('.controls .btn:nth-child(2)');
+            
+            if (isPaused) {
+                pauseBtn.innerHTML = '▶️ Resume';
+                document.querySelectorAll('*').forEach(el => {
+                    el.style.animationPlayState = 'paused';
+                });
+            } else {
+                pauseBtn.innerHTML = '⏸️ Pause';
+                document.querySelectorAll('*').forEach(el => {
+                    el.style.animationPlayState = 'running';
+                });
+            }
+        }
+
+        function downloadHTML() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'dsmb-interactive-animation.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            // Update info panel
+            infoTitle.textContent = 'Download Complete!';
+            infoContent.innerHTML = 'File saved as "dsmb-interactive-animation.html"<br><br>🎵 <strong>Music:</strong> Click 🎵 button to test audio<br><br>📁 <strong>GitHub Upload:</strong><br>1. Create repository<br>2. Upload as "index.html"<br>3. Enable Pages in Settings<br><br>🎬 <strong>Recording:</strong> Enable music first, then record!<br><br>💡 <strong>No Audio?</strong> You can add music in video editing later.';
+            infoPanel.classList.add('active');
+        }
+
+        // Click handlers for elements
+        elements.forEach((element, index) => {
+            element.addEventListener('click', (e) => {
+                const infoKey = element.getAttribute('data-info');
+                const info = elementInfo[infoKey];
+                
+                infoTitle.textContent = info.title;
+                infoContent.textContent = info.content;
+                
+                // Visual feedback
+                element.classList.add('clicked');
+                
+                // Create ripple effect
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                ripple.style.left = '50%';
+                ripple.style.top = '50%';
+                element.appendChild(ripple);
+                
+                setTimeout(() => {
+                    element.classList.remove('clicked');
+                    if (ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple);
+                    }
+                }, 1500);
+            });
+        });
+
+        // Auto-start animation
+        window.addEventListener('load', () => {
+            setTimeout(startAnimation, 1000);
+        });
+
+        // Initialize audio context on first user interaction
+        document.addEventListener('click', () => {
+            if (!audioContext) {
+                initAudio();
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>
